@@ -11,6 +11,7 @@ import os
 import sys
 import json
 import math
+import re
 import html
 import traceback
 from datetime import datetime, timedelta, timezone
@@ -67,7 +68,7 @@ EVENT_KO = [
     ("FOMC Economic Projections", "FOMC 경제전망"),
     ("Fed Chair", "연준 의장 발언"),
     ("GDP", "GDP 성장률"),
-        ("Core Retail Sales", "근원 소매판매"),
+    ("Core Retail Sales", "근원 소매판매"),
     ("Retail Sales", "소매판매"),
     ("ISM Manufacturing PMI", "ISM 제조업 PMI"),
     ("ISM Services PMI", "ISM 서비스업 PMI"),
@@ -319,32 +320,68 @@ def ai_summary(titles):
         return None
 
 
-def fetch_news():
-    url = (f"https://news.google.com/rss/search?q={quote(NEWS_QUERY)}"
-           "&hl=ko&gl=KR&ceid=KR:ko")
-    r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=20)
-    r.raise_for_status()
-    root = ET.fromstring(r.content)
-    items, seen_titles = [], set()
-    cutoff = datetime.now(timezone.utc) - timedelta(hours=36)
-    for it in root.iter("item"):
-        title = (it.findtext("title") or "").strip()
-        link = (it.findtext("link") or "").strip()
-        source = (it.findtext("source") or "").strip()
+# 뉴스 출처 (이름, 주소, 한국어 여부). 구글이 막혀도 나머지에서 가져옴
+NEWS_FEEDS = [
+    ("구글뉴스", f"https://news.google.com/rss/search?q={quote(NEWS_QUERY)}&hl=ko&gl=KR&ceid=KR:ko", True),
+    ("연합뉴스", "https://www.yna.co.kr/rss/market.xml", True),
+    ("연합뉴스", "https://www.yna.co.kr/rss/international.xml", True),
+    ("연합뉴스", "https://www.yna.co.kr/rss/economy.xml", True),
+    ("뉴시스", "https://www.newsis.com/RSS/economy.xml", True),
+    ("한국경제", "https://www.hankyung.com/feed/finance", True),
+    ("한국경제", "https://www.hankyung.com/feed/international", True),
+    ("Investing.com", "https://www.investing.com/rss/news_11.rss", False),
+]
+KO_GOLD = re.compile(r"금값|금\s?가격|금\s?시세|국제\s?금|금\s?선물|금\s?현물|금\s?투자|금\s?ETF|골드바|금괴|금\s?매입|금\s?보유")
+EN_GOLD = re.compile(r"\bgold\b", re.I)
+
+
+def parse_pub(it):
+    for tag in ("pubDate", "{http://purl.org/dc/elements/1.1/}date"):
+        raw = (it.findtext(tag) or "").strip()
+        if not raw:
+            continue
         try:
-            pub = parsedate_to_datetime(it.findtext("pubDate"))
+            return parsedate_to_datetime(raw)
         except Exception:
+            pass
+        try:
+            d = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+            return d if d.tzinfo else d.replace(tzinfo=timezone.utc)
+        except Exception:
+            pass
+    return None
+
+
+def fetch_news():
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=36)
+    items, seen = [], set()
+    for name, url, korean in NEWS_FEEDS:
+        try:
+            r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=20)
+            r.raise_for_status()
+            root = ET.fromstring(r.content)
+        except Exception as e:
+            print(f"[뉴스 출처 실패] {name}: {e}")
             continue
-        if pub < cutoff:
-            continue
-        if source and title.endswith(" - " + source):
-            title = title[: -len(" - " + source)]
-        key = title[:25]
-        if key in seen_titles:
-            continue
-        seen_titles.add(key)
-        items.append({"title": title, "link": link, "source": source, "pub": pub})
-    items.sort(key=lambda x: x["pub"], reverse=True)
+        for it in root.iter("item"):
+            title = html.unescape((it.findtext("title") or "").strip())
+            link = (it.findtext("link") or "").strip()
+            source = (it.findtext("source") or "").strip() or name
+            if source and title.endswith(" - " + source):
+                title = title[: -len(" - " + source)]
+            if not (KO_GOLD if korean else EN_GOLD).search(title):
+                continue
+            pub = parse_pub(it)
+            if pub is None or pub < cutoff:
+                continue
+            key = re.sub(r"\W", "", title)[:20]
+            if key in seen or not link:
+                continue
+            seen.add(key)
+            items.append({"title": title, "link": link, "source": source,
+                          "pub": pub, "korean": korean})
+    # 한국어 기사 먼저, 그다음 최신순
+    items.sort(key=lambda x: (not x["korean"], -x["pub"].timestamp()))
     return items
 
 
