@@ -297,6 +297,20 @@ def morning_brief(now):
 
 
 # ---------------- 뉴스 ----------------
+def gold_now_line():
+    """현재 금 시세 (전일 마감 대비)"""
+    intraday = yf.Ticker(GOLD).history(period="2d", interval="15m")
+    if intraday.empty:
+        raise RuntimeError("금 실시간 데이터 없음")
+    cur = float(intraday["Close"].iloc[-1])
+    daily = daily_completed(GOLD)
+    today_ny = datetime.now(NY).date()
+    # 오늘 봉이 진행 중이면 그 전날 종가와 비교
+    base_row = daily.iloc[-2] if daily.index[-1].date() == today_ny else daily.iloc[-1]
+    p = pct(cur, float(base_row["Close"]))
+    return f"💰 <b>금 현재가</b> {cur:,.1f} {arrow(p)} {p:+.2f}%"
+
+
 def ai_summary(titles):
     key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
     if not key:
@@ -399,13 +413,24 @@ def post_news(state, now, force=False):
         return
 
     k = now.astimezone(KST)
-    lines = [f"📰 <b>금 시장 뉴스</b> | {kday(k)} {k:%H:%M}", ""]
+    lines = [f"📰 <b>금 시장 뉴스</b>", f"{kday(k)} {k:%H:%M}", ""]
+    price = safe(gold_now_line)
+    if price:
+        lines += [price, ""]
     summary = ai_summary([i["title"] for i in new[:10]])
     if summary:
-        lines += [f"💬 {html.escape(summary)}", ""]
-    for i in pick:
-        src = f" · {html.escape(i['source'])}" if i["source"] else ""
-        lines.append(f'• <a href="{html.escape(i["link"])}">{html.escape(i["title"])}</a>{src}')
+        lines += [f"💬 <b>요약</b>", html.escape(summary), ""]
+    nums = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
+    lines.append("━━━━━━━━━━━━")
+    for n, i in enumerate(pick):
+        t = i["pub"].astimezone(KST)
+        when = f"{t:%H:%M}" if t.date() == k.date() else f"{t:%m/%d %H:%M}"
+        lines += [
+            "",
+            f'{nums[n]} <b><a href="{html.escape(i["link"])}">{html.escape(i["title"])}</a></b>',
+            f"      <i>{html.escape(i['source'])} · {when}</i>",
+        ]
+    lines += ["", "━━━━━━━━━━━━", "👆 제목을 누르면 기사로 이동합니다"]
     send("\n".join(lines))
 
     state["posted_news"] = (posted + [i["link"] for i in pick])[-100:]
