@@ -491,21 +491,19 @@ def weekly_report(now):
     send("\n".join(lines))
 
 
-# ---------------- 내 포지션 기록 ----------------
-HELP_TEXT = (
-    "📘 <b>사용법</b> (이 대화창에 보내세요)\n\n"
-    "<b>진입</b>\n"
-    "매수 4012.5 0.1\n"
-    "매도 4012.5 0.1 손절 4030 목표 3980 고점 저항\n"
-    "  → 가격, 랏(생략 시 기본값), 손절·목표·근거는 선택\n\n"
-    "<b>청산</b>\n"
-    "청산 4030  → 가장 최근 포지션 청산\n"
-    "청산 4030 3  → #3번 포지션 청산\n\n"
-    "<b>기타</b>\n"
-    "현황  → 보유 포지션·오늘 손익\n"
-    "취소  → 마지막 입력 되돌리기 (채널 글도 삭제 시도)\n\n"
-    "※ 15분 간격으로 처리돼서 채널 반영까지 최대 15분 정도 걸려요."
-)
+# ---------------- 내 포지션 기록 (채널 글 자동 인식) ----------------
+# 채널에 직접 쓴 글이 아래 단어로 시작하면 기록합니다.
+#   매수 3875 1랏 손절 3860 목표 3900   (매수/매도/롱/숏/buy/sell)
+#   청산 3890        → 가장 최근 보유 포지션 청산
+#   #2 청산 3890     → 2번 포지션 청산
+# 글을 '수정'하면 기록도 같이 고쳐집니다.
+REACT_ON_RECORD = True    # 기록되면 그 글에 ✍ 반응 달기 (확인용)
+
+ENTRY_WORDS = {"매수": "BUY", "buy": "BUY", "롱": "BUY", "long": "BUY",
+               "매도": "SELL", "sell": "SELL", "숏": "SELL", "short": "SELL"}
+CLOSE_WORDS = ("청산", "close", "종료")
+SKIP_WORDS = ("xauusd", "gold", "골드", "금")
+NUM = r"\d[\d,]*(?:\.\d+)?"
 
 
 def usd(v):
@@ -522,178 +520,143 @@ def pnl_of(p):
     return diff, diff * CONTRACT_SIZE * p["lots"]
 
 
-def num(s):
-    return float(s.replace(",", "").replace("$", ""))
+def fnum(s):
+    return float(s.replace(",", ""))
 
 
-def is_num(s):
+def parse_trade(text):
+    """채널 글 → {'type': 'open'|'close', ...} 또는 None"""
+    if not text:
+        return None
+    lines = text.strip().splitlines()
+    first = lines[0]
+    m_id = re.search(r"#\s*(\d+)", first)
+    pid = int(m_id.group(1)) if m_id else None
+    body = re.sub(r"#\s*\d+", " ", first)
+    words = re.sub(r"[^\w\s.,]", " ", body).split()
+    while words and words[0].lower() in SKIP_WORDS:
+        words = words[1:]
+    if not words:
+        return None
+    w0 = words[0].lower()
+    rest = " ".join(words[1:])
+
+    if any(w0.startswith(k) for k in CLOSE_WORDS):
+        nums = re.findall(NUM, rest)
+        if not nums:
+            return None
+        price = fnum(nums[0])
+        if not 100 <= price <= 100000:
+            return None
+        return {"type": "close", "price": price, "id": pid}
+
+    side = next((v for k, v in ENTRY_WORDS.items() if w0.startswith(k)), None)
+    if not side:
+        return None
+    full = " ".join(lines)
+    sl = re.search(r"(?:손절|sl|stop)\s*[:：]?\s*(" + NUM + ")", full, re.I)
+    tp = re.search(r"(?:목표|익절|tp|target)\s*[:：]?\s*(" + NUM + ")", full, re.I)
+    clean = re.sub(r"(?:손절|sl|stop|목표|익절|tp|target)\s*[:：]?\s*" + NUM, " ", rest, flags=re.I)
+    lot_after = r"(?:랏|lots?)\s*[:：]?\s*(" + NUM + ")"   # 'lot 0.3'
+    lot_before = r"(" + NUM + r")\s*(?:랏|lots?)"           # '0.3랏'
+    lot = re.search(lot_after, clean, re.I)
+    if lot:
+        clean = re.sub(lot_after, " ", clean, flags=re.I)
+    else:
+        lot = re.search(lot_before, clean, re.I)
+        clean = re.sub(lot_before, " ", clean, flags=re.I)
+    nums = re.findall(NUM, clean)
+    if not nums:
+        return None
+    price = fnum(nums[0])
+    if not 100 <= price <= 100000:
+        return None
+    if lot:
+        lots = fnum(lot.group(1))
+    elif len(nums) > 1 and fnum(nums[1]) < 100:
+        lots = fnum(nums[1])
+    else:
+        lots = DEFAULT_LOT
+    return {"type": "open", "side": side, "entry": price, "lots": lots,
+            "sl": fnum(sl.group(1)) if sl else None,
+            "tp": fnum(tp.group(1)) if tp else None}
+
+
+def react(chat, message_id):
+    if not REACT_ON_RECORD:
+        return
     try:
-        num(s)
-        return True
-    except ValueError:
-        return False
+        tg("setMessageReaction", chat_id=chat, message_id=message_id,
+           reaction=json.dumps([{"type": "emoji", "emoji": "✍"}]))
+    except Exception as e:
+        print("[반응 실패]", e)
 
 
-def handle_open(state, side, args, when):
-    if not args or not is_num(args[0]):
-        return "⚠️ 가격을 같이 적어주세요. 예) 매수 4012.5 0.1"
-    entry = num(args[0])
-    rest = args[1:]
-    lots = DEFAULT_LOT
-    if rest and is_num(rest[0]):
-        lots = num(rest[0])
-        rest = rest[1:]
-    sl = tp = None
-    memo = []
-    i = 0
-    while i < len(rest):
-        w = rest[i].lower()
-        if w in ("손절", "sl") and i + 1 < len(rest) and is_num(rest[i + 1]):
-            sl = num(rest[i + 1]); i += 2; continue
-        if w in ("목표", "익절", "tp") and i + 1 < len(rest) and is_num(rest[i + 1]):
-            tp = num(rest[i + 1]); i += 2; continue
-        memo.append(rest[i]); i += 1
-
-    pid = state.get("next_id", 1)
-    state["next_id"] = pid + 1
-    p = {"id": pid, "side": side, "entry": entry, "lots": lots, "sl": sl, "tp": tp,
-         "memo": " ".join(memo), "open_time": when.isoformat(),
-         "exit": None, "close_time": None}
-
-    emoji = "🟢" if side == "BUY" else "🔴"
-    lines = [f"{emoji} <b>{side} {SYMBOL_NAME}</b>  #{pid}",
-             f"진입 {entry:,.2f} · {lots:g}랏"]
-    if sl or tp:
-        lines.append(f"손절 {sl:,.2f}" if sl else "손절 -")
-        lines[-1] += f" · 목표 {tp:,.2f}" if tp else " · 목표 -"
-    if p["memo"]:
-        lines.append(f"근거: {html.escape(p['memo'])}")
-    lines.append(f"🕒 {when.astimezone(KST):%m/%d %H:%M}")
-    p["msg_open"] = send("\n".join(lines))
-
-    state.setdefault("positions", []).append(p)
-    state["last_action"] = {"type": "open", "id": pid}
-    return f"✅ #{pid} {side} {entry:,.2f} · {lots:g}랏 등록했고 채널에 올렸어요."
+def is_my_channel(chat):
+    target = os.environ["TELEGRAM_CHAT_ID"].strip().lower()
+    return (str(chat.get("id")) == target
+            or ("@" + (chat.get("username") or "")).lower() == target)
 
 
-def handle_close(state, args, when):
-    if not args or not is_num(args[0]):
-        return "⚠️ 청산 가격을 적어주세요. 예) 청산 4030"
-    price = num(args[0])
-    opens = [p for p in state.get("positions", []) if p["exit"] is None]
-    if not opens:
-        return "⚠️ 보유 중인 포지션이 없어요."
-    if len(args) > 1:
-        want = args[1].lstrip("#")
-        target = next((p for p in opens if str(p["id"]) == want), None)
+def record_post(state, post, edited=False):
+    text = post.get("text") or post.get("caption") or ""
+    mid = post["message_id"]
+    chat = post["chat"]["id"]
+    when = datetime.fromtimestamp(post["date"], timezone.utc)
+    pos = state.setdefault("positions", [])
+    t = parse_trade(text)
+
+    by_open = next((p for p in pos if p.get("src_open") == mid), None)
+    by_close = next((p for p in pos if p.get("src_close") == mid), None)
+
+    if edited:  # 수정된 글이면 기존 기록 고치기
+        if by_open and t and t["type"] == "open":
+            by_open.update(side=t["side"], entry=t["entry"], lots=t["lots"], sl=t["sl"], tp=t["tp"])
+            print(f"[수정] #{by_open['id']} 진입 정보 수정")
+        elif by_close and t and t["type"] == "close":
+            by_close["exit"] = t["price"]
+            print(f"[수정] #{by_close['id']} 청산가 수정")
+        elif by_open or by_close:
+            print("[수정] 거래 형식이 아니게 바뀐 글 - 기존 기록 유지")
+        elif t:
+            edited = False  # 처음 인식되는 글이면 새로 기록
+        if edited:
+            return
+
+    if not t or by_open or by_close:
+        return
+
+    if t["type"] == "open":
+        pid = state.get("next_id", 1)
+        state["next_id"] = pid + 1
+        pos.append({"id": pid, "side": t["side"], "entry": t["entry"], "lots": t["lots"],
+                    "sl": t["sl"], "tp": t["tp"], "open_time": when.isoformat(),
+                    "exit": None, "close_time": None, "src_open": mid})
+        print(f"[기록] #{pid} {t['side']} {t['entry']} {t['lots']}랏")
+        react(chat, mid)
+    else:
+        opens = [p for p in pos if p["exit"] is None]
+        target = (next((p for p in opens if p["id"] == t["id"]), None) if t["id"]
+                  else (opens[-1] if opens else None))
         if not target:
-            return f"⚠️ #{want} 보유 포지션을 못 찾았어요. '현황'으로 번호를 확인하세요."
-    else:
-        target = opens[-1]
-
-    target["exit"] = price
-    target["close_time"] = when.isoformat()
-    diff, money = pnl_of(target)
-    emoji = "✅" if money > 0 else ("❌" if money < 0 else "➖")
-    text = (f"{emoji} <b>청산 {target['side']} {SYMBOL_NAME}</b>  #{target['id']}\n"
-            f"{target['entry']:,.2f} → {price:,.2f} ({diff:+,.2f})\n"
-            f"손익 <b>{usd(money)}</b> · {target['lots']:g}랏\n"
-            f"🕒 {when.astimezone(KST):%m/%d %H:%M}")
-    target["msg_close"] = send(text)
-    state["last_action"] = {"type": "close", "id": target["id"]}
-    left = len(opens) - 1
-    return f"✅ #{target['id']} 청산 기록 · 손익 {usd(money)}" + (f" (남은 보유 {left}개)" if left else "")
+            print("[청산] 맞는 보유 포지션 없음:", text[:30])
+            return
+        target.update(exit=t["price"], close_time=when.isoformat(), src_close=mid)
+        print(f"[기록] #{target['id']} 청산 {t['price']} → {usd(pnl_of(target)[1])}")
+        react(chat, mid)
 
 
-def handle_undo(state):
-    la = state.get("last_action")
-    pos = state.get("positions", [])
-    if not la:
-        return "⚠️ 되돌릴 입력이 없어요."
-    p = next((x for x in pos if x["id"] == la["id"]), None)
-    if not p:
-        return "⚠️ 되돌릴 입력을 못 찾았어요."
-    key = "msg_open" if la["type"] == "open" else "msg_close"
-    deleted = False
-    if p.get(key):
-        try:
-            tg("deleteMessage", chat_id=os.environ["TELEGRAM_CHAT_ID"].strip(), message_id=p[key])
-            deleted = True
-        except Exception as e:
-            print("[삭제 실패]", e)
-    if la["type"] == "open":
-        pos.remove(p)
-        msg = f"↩️ #{p['id']} 진입 기록을 지웠어요."
-    else:
-        p["exit"] = p["close_time"] = p["msg_close"] = None
-        msg = f"↩️ #{p['id']} 청산을 취소했어요 (다시 보유 중)."
-    state["last_action"] = None
-    return msg + ("" if deleted else "\n채널 글은 직접 지워주세요.")
-
-
-def handle_status(state, now):
-    pos = state.get("positions", [])
-    opens = [p for p in pos if p["exit"] is None]
-    today = trade_day(now)
-    today_closed = [p for p in pos if p["exit"] is not None
-                    and trade_day(datetime.fromisoformat(p["close_time"])) == today]
-    total = sum(pnl_of(p)[1] for p in pos if p["exit"] is not None)
-    lines = ["📋 <b>현황</b>", ""]
-    if opens:
-        lines.append("보유 중")
-        lines += [f"• #{p['id']} {p['side']} {p['entry']:,.2f} · {p['lots']:g}랏" for p in opens]
-    else:
-        lines.append("보유 중인 포지션 없음")
-    lines += ["", f"오늘 청산 {len(today_closed)}건 · {usd(sum(pnl_of(p)[1] for p in today_closed))}",
-              f"누적 손익 {usd(total)}"]
-    return "\n".join(lines)
-
-
-def process_commands(state, now):
-    """봇 개인 대화창으로 온 명령 처리"""
+def process_channel(state, now):
+    """채널에 올라온 내 글 읽어서 포지션 기록"""
     offset = state.get("tg_offset", 0)
     updates = tg("getUpdates", offset=offset, timeout=0,
-                 allowed_updates='["message"]') or []
-    owner = (os.environ.get("TELEGRAM_OWNER_ID") or "").strip() or state.get("owner_id")
+                 allowed_updates='["channel_post","edited_channel_post"]') or []
     for u in updates:
         state["tg_offset"] = u["update_id"] + 1
-        msg = u.get("message")
-        if not msg or msg.get("chat", {}).get("type") != "private":
+        post = u.get("channel_post") or u.get("edited_channel_post")
+        if not post or not is_my_channel(post.get("chat", {})):
             continue
-        uid = str(msg["from"]["id"])
-        chat = msg["chat"]["id"]
-        text = (msg.get("text") or "").strip()
-        when = datetime.fromtimestamp(msg["date"], timezone.utc)
-
-        if not owner:  # 처음 말 건 사람을 주인으로 등록
-            owner = uid
-            state["owner_id"] = uid
-            send("🔐 주인으로 등록됐어요. 이제 이 봇은 당신 명령만 받습니다.\n\n" + HELP_TEXT, chat)
-            continue
-        if uid != owner:
-            continue
-
-        parts = text.replace(",", "").split()
-        if not parts:
-            continue
-        cmd, args = parts[0].lstrip("/").lower(), parts[1:]
-        try:
-            if cmd in ("매수", "buy", "롱", "long"):
-                reply = handle_open(state, "BUY", args, when)
-            elif cmd in ("매도", "sell", "숏", "short"):
-                reply = handle_open(state, "SELL", args, when)
-            elif cmd in ("청산", "close", "종료"):
-                reply = handle_close(state, args, when)
-            elif cmd in ("취소", "undo"):
-                reply = handle_undo(state)
-            elif cmd in ("현황", "status"):
-                reply = handle_status(state, now)
-            else:
-                reply = HELP_TEXT
-        except Exception as e:
-            traceback.print_exc()
-            reply = f"⚠️ 처리 중 오류: {html.escape(str(e))}"
-        send(reply, chat)
+        record_post(state, post, edited="edited_channel_post" in u)
 
 
 def closed_between(state, start, end):
@@ -816,13 +779,20 @@ def main():
         state.pop("last_price_bar", None)
         run("가격 알림", lambda: price_check(state, now))
     elif mode == "daily":
+        run("포지션 기록", lambda: process_channel(state, now))
         run("일일 결산", lambda: daily_pnl_report(state, now))
     elif mode == "weekly_pnl":
+        run("포지션 기록", lambda: process_channel(state, now))
         run("주간 결산", lambda: weekly_pnl_report(state, now))
+    elif mode == "reset":
+        for key in ("positions", "next_id", "last_action"):
+            state.pop(key, None)
+        print("포지션 기록을 초기화했습니다.")
     elif mode == "monthly":
+        run("포지션 기록", lambda: process_channel(state, now))
         run("월간 결산", lambda: monthly_pnl_report(state, now))
     else:  # auto: 15분마다 실행되며 때가 된 것만 보냄
-        run("포지션 명령", lambda: process_commands(state, now))
+        run("포지션 기록", lambda: process_channel(state, now))
         run("지표 알림", lambda: event_alerts(state, now))
         run("가격 알림", lambda: price_check(state, now))
 
