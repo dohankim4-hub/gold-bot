@@ -1,4 +1,43 @@
 {
+ "alerted_events": {},
+ "last_action": {
+  "id": 2,
+  "type": "close"
+ },
+ "last_price_bar": "2026-11-17T00:00:00-05:00",
+ "news_slots": [],
+ "next_id": 3,
+ "owner_id": "5430409548",
+ "positions": [
+  {
+   "close_time": "2026-11-17T06:40:25+00:00",
+   "entry": 3875.0,
+   "exit": 3890.0,
+   "id": 1,
+   "lots": 1.0,
+   "memo": "",
+   "msg_close": 15,
+   "msg_open": 13,
+   "open_time": "2026-11-17T06:39:42+00:00",
+   "side": "BUY",
+   "sl": null,
+   "tp": null
+  },
+  {
+   "close_time": "2026-11-17T06:40:31+00:00",
+   "entry": 3880.0,
+   "exit": 3885.0,
+   "id": 2,
+   "lots": 0.2,
+   "memo": "저항 구간 숏",
+   "msg_close": 16,
+   "msg_open": 14,
+   "open_time": "2026-11-17T06:40:12+00:00",
+   "side": "SELL",
+   "sl": 3895.0,
+   "tp": 3850.0
+  }
+ ],
  "posted_news": [
   "https://www.newsis.com/view/NISX20261117_0003871435",
   "https://news.google.com/rss/articles/CBMia0FVX3lxTFAzQVhRYVowYldjSEJ3UW5IRkl1aFlPY3QwQ1djTDY4NU1CZGdsZkE2Ym9qaVJXSmtCdk9rVC01Sk9IbUdiTVFSUjVJLXJfdE14bFpSRnZfbnIxdlVsX21DWkp3X3A4dVRNb1BR?oc=5",
@@ -6,5 +45,6 @@
   "https://news.google.com/rss/articles/CBMiaEFVX3lxTE5vUHlnOGsyNGJCWlBENzRvVVVuQXEtRnB6YkE0d1VHejl4aGVfVFROYXprWTlYS1VGYl9lSEo4SjQ5bG05QXNfcVRYWDF1UnRFRVd3QXEydWRleFNuNWhHLV9vdzJYWFV1?oc=5",
   "https://news.google.com/rss/articles/CBMibEFVX3lxTFBWNm84YUZManp4TTI0a2pYaVlac29uMmtBS0FUSXNqWXI2RGFpYkRLMlNQc1J3ZWVjZTR6NV9Qekh6OXNjT1hlWnZzV3JvOWFmWUlJUDlwV0g4cTlJX0JZZURBVU5mdlAtdHBSMw?oc=5",
   "https://news.google.com/rss/articles/CBMib0FVX3lxTE5faXQ1OXUtQi14cGNLNWZ6bE85aThjTEVLS1c0UlE4STdrdkk2aEZ3NXNDWWZVLW5scHZsNWM0RlFHcjM0WXBqMjg1S1hrRWhUenAzU09XZlB0cEJEUkhNSWlQR21YUFpjeHV1VXByTQ?oc=5"
- ]
+ ],
+ "tg_offset": 922670810
 }
