@@ -67,6 +67,7 @@ EVENT_KO = [
     ("FOMC Economic Projections", "FOMC 경제전망"),
     ("Fed Chair", "연준 의장 발언"),
     ("GDP", "GDP 성장률"),
+        ("Core Retail Sales", "근원 소매판매"),
     ("Retail Sales", "소매판매"),
     ("ISM Manufacturing PMI", "ISM 제조업 PMI"),
     ("ISM Services PMI", "ISM 서비스업 PMI"),
