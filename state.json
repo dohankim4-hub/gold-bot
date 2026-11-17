@@ -1,7 +1,9 @@
 {
  "alerted_events": {},
- "last_price_bar": "2026-11-17T03:00:00-05:00",
- "news_slots": [],
+ "last_price_bar": "2026-11-17T04:00:00-05:00",
+ "news_slots": [
+  "2026-11-17-19"
+ ],
  "next_id": 3,
  "owner_id": "5430409548",
  "positions": [
@@ -40,7 +42,10 @@
   "https://www.newsis.com/view/NISX20261117_0003871435",
   "https://www.yna.co.kr/view/AKR20261117065600009",
   "https://www.investing.com/news/commodities-news/gold-hovers-near-14month-low-as-fed-hike-bets-and-tech-selloff-weigh-5031431",
-  "https://www.investing.com/news/commodities-news/gold-falls-below-3900-as-december-fed-hike-bets-build-warsh-in-focus-5028296"
+  "https://www.investing.com/news/commodities-news/gold-falls-below-3900-as-december-fed-hike-bets-build-warsh-in-focus-5028296",
+  "https://news.google.com/rss/articles/CBMiZEFVX3lxTE5lQnRWenJZSzQ2U1FFQU5JMC1qVVVWZEpqaWpiaEo3Mk1NWnpHbUQ1bmliUklpaU82bHozQjMwQ2RjTXJUTzY5QlZ1b2otc3JaV0g2THJCVkhiNERKbnB2Z0VsNjk?oc=5",
+  "https://news.google.com/rss/articles/CBMikwFBVV95cUxNM21kaVM3cTVsdmFIVjhYZ002X1o0ZHNFVklxdkVCRVFRVENsY2FCMFVNRDV3c29OeWF3NUxsWVpBQ3BCQ0plU21RaTl5OHVZRUJHUU9sMWRWZDBJQ2k5MGtobGt0ZGYyWWF4M3hMRVRGVnlJYXdGR2toQVEwQ05SV1huT2R0VkpzMkliTmd0SWNlT1U?oc=5",
+  "https://news.google.com/rss/articles/CBMic0FVX3lxTE5Kemo0OEN6cDAwaVEtNDY2b1RJQW9fU2V1aG0zM05oTFRZRVA5b2xBVHZDTmphLWVCQ1Q2M3JFb1I0ZEt5ZkRMZDRfcTNja2ZPeEVsc2p4VGlta2lVWGZROGEzVEJhMkJDZ21ub0FxQndRVVk?oc=5"
  ],
  "tg_offset": 922670813
 }
