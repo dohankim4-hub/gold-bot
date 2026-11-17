@@ -2,7 +2,34 @@
  "alerted_events": {},
  "last_price_bar": "2026-11-17T00:00:00-05:00",
  "news_slots": [],
+ "next_id": 3,
  "owner_id": "5430409548",
+ "positions": [
+  {
+   "close_time": null,
+   "entry": 3875.0,
+   "exit": null,
+   "id": 1,
+   "lots": 0.1,
+   "open_time": "2026-11-17T06:49:42+00:00",
+   "side": "BUY",
+   "sl": 3860.0,
+   "src_open": 18,
+   "tp": 3900.0
+  },
+  {
+   "close_time": null,
+   "entry": 3875.0,
+   "exit": null,
+   "id": 2,
+   "lots": 0.1,
+   "open_time": "2026-11-17T06:48:26+00:00",
+   "side": "BUY",
+   "sl": null,
+   "src_open": 17,
+   "tp": null
+  }
+ ],
  "posted_news": [
   "https://www.newsis.com/view/NISX20261117_0003871435",
   "https://news.google.com/rss/articles/CBMia0FVX3lxTFAzQVhRYVowYldjSEJ3UW5IRkl1aFlPY3QwQ1djTDY4NU1CZGdsZkE2Ym9qaVJXSmtCdk9rVC01Sk9IbUdiTVFSUjVJLXJfdE14bFpSRnZfbnIxdlVsX21DWkp3X3A4dVRNb1BR?oc=5",
@@ -11,5 +38,5 @@
   "https://news.google.com/rss/articles/CBMibEFVX3lxTFBWNm84YUZManp4TTI0a2pYaVlac29uMmtBS0FUSXNqWXI2RGFpYkRLMlNQc1J3ZWVjZTR6NV9Qekh6OXNjT1hlWnZzV3JvOWFmWUlJUDlwV0g4cTlJX0JZZURBVU5mdlAtdHBSMw?oc=5",
   "https://news.google.com/rss/articles/CBMib0FVX3lxTE5faXQ1OXUtQi14cGNLNWZ6bE85aThjTEVLS1c0UlE4STdrdkk2aEZ3NXNDWWZVLW5scHZsNWM0RlFHcjM0WXBqMjg1S1hrRWhUenAzU09XZlB0cEJEUkhNSWlQR21YUFpjeHV1VXByTQ?oc=5"
  ],
- "tg_offset": 922670811
+ "tg_offset": 922670813
 }
