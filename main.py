@@ -37,6 +37,7 @@ SYMBOL_NAME = "XAUUSD"    # 포지션 표시 이름
 CONTRACT_SIZE = 100       # 1랏 = 100온스 (MT5 XAUUSD 일반 기준. 브로커마다 다르면 수정)
 DEFAULT_LOT = 0.1         # 랏 수를 안 쓰면 이 값으로 기록
 DAY_START_HOUR = 7        # 거래일 시작 시각 (한국시간 07시 = 금 시장 하루 시작)
+POSITION_FEATURE = False  # True로 바꾸면 채널 매매글 기록 + 일/주/월 결산 켜짐
 # ===============================================================
 
 KST = ZoneInfo("Asia/Seoul")
@@ -366,8 +367,8 @@ def parse_pub(it):
     return None
 
 
-def fetch_news():
-    cutoff = datetime.now(timezone.utc) - timedelta(hours=36)
+def fetch_news(hours=36):
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
     items, seen = [], set()
     for name, url, korean in NEWS_FEEDS:
         try:
@@ -454,6 +455,64 @@ def week_stats(symbol):
     }
 
 
+def monday_brief(state, now):
+    """월요일 아침: 지난주 정리 + 주말 뉴스 + 이번 주 일정"""
+    k = now.astimezone(KST)
+    g = week_stats(GOLD)
+    p = pct(g["close"], g["prev"])
+    lines = [
+        f"🗞 <b>주말 시황 정리 & 이번 주 체크</b>",
+        f"{kday(k)}",
+        "",
+        "🥇 <b>지난주 금 마감</b>",
+        f"종가 {g['close']:,.1f} {arrow(p)} 주간 {p:+.2f}%",
+        f"주간 고가 {g['high']:,.1f} · 저가 {g['low']:,.1f}",
+        "",
+        "📊 <b>함께 볼 지표 (금요일 마감)</b>",
+    ]
+    for line in (safe(quote_line, "은", SILVER), safe(quote_line, "달러인덱스", DXY),
+                 safe(yield_line, "미 10년물", US10Y)):
+        if line:
+            lines.append(line)
+
+    # 주말 뉴스
+    try:
+        items = fetch_news(hours=72)[:4]
+        if items:
+            summary = ai_summary([i["title"] for i in items])
+            lines += ["", "━━━━━━━━━━━━", "", "📰 <b>주말 금 시장 뉴스</b>"]
+            if summary:
+                lines.append(f"💬 {html.escape(summary)}")
+            for i in items:
+                lines.append(f'• <a href="{html.escape(i["link"])}">{html.escape(i["title"])}</a>'
+                             f" <i>· {html.escape(i['source'])}</i>")
+            state["posted_news"] = (state.get("posted_news", []) + [i["link"] for i in items])[-100:]
+    except Exception as e:
+        print("[주말 뉴스 실패]", e)
+
+    # 이번 주 일정
+    try:
+        evs = [e for e in fetch_events() if e["time"] >= now]
+        lines += ["", "━━━━━━━━━━━━", "", "🗓 <b>이번 주 주요 일정</b> (미국·중요도 높음)"]
+        if evs:
+            seen = set()
+            for e in evs:
+                t = e["time"].astimezone(KST)
+                name = event_ko(e["title"])
+                key = (t.date(), name)
+                if key in seen:
+                    continue
+                seen.add(key)
+                lines.append(f"• {t.month}/{t.day}({WEEKDAYS[t.weekday()]}) {t:%H:%M} {html.escape(name)}")
+        else:
+            lines.append("• 큰 일정 없음")
+    except Exception as e:
+        print("[일정 실패]", e)
+
+    lines += ["", "이번 주도 차분하게 대응하겠습니다 🙏"]
+    send("\n".join(lines))
+
+
 def weekly_report(now):
     g = week_stats(GOLD)
     p = pct(g["close"], g["prev"])
@@ -501,8 +560,7 @@ REACT_ON_RECORD = True    # 기록되면 그 글에 ✍ 반응 달기 (확인용
 
 ENTRY_WORDS = {"매수": "BUY", "buy": "BUY", "롱": "BUY", "long": "BUY",
                "매도": "SELL", "sell": "SELL", "숏": "SELL", "short": "SELL"}
-CLOSE_WORDS = ("청산", "close", "종료")
-SKIP_WORDS = ("xauusd", "gold", "골드", "금")
+CLOSE_WORDS = ("청산", "close", "종료", "익절", "손절")
 NUM = r"\d[\d,]*(?:\.\d+)?"
 
 
@@ -525,40 +583,42 @@ def fnum(s):
 
 
 def parse_trade(text):
-    """채널 글 → {'type': 'open'|'close', ...} 또는 None"""
+    """채널 글 → {'type': 'open'|'close', ...} 또는 None
+    글 앞부분(단어 3개 안)에 매수/매도/청산/종료/익절/손절이 있어야 인식"""
     if not text:
         return None
-    lines = text.strip().splitlines()
-    first = lines[0]
-    m_id = re.search(r"#\s*(\d+)", first)
+    m_id = re.search(r"#\s*(\d+)", text)
     pid = int(m_id.group(1)) if m_id else None
-    body = re.sub(r"#\s*\d+", " ", first)
-    words = re.sub(r"[^\w\s.,]", " ", body).split()
-    while words and words[0].lower() in SKIP_WORDS:
-        words = words[1:]
-    if not words:
-        return None
-    w0 = words[0].lower()
-    rest = " ".join(words[1:])
+    flat = re.sub(r"#\s*\d+", " ", text)
+    flat = re.sub(r"[^\w\s.,:：]", " ", flat)      # 이모지·기호 제거, 줄 합치기
+    words = [w for w in flat.split() if w.lower() not in ("xauusd", "gold", "골드")]
 
-    if any(w0.startswith(k) for k in CLOSE_WORDS):
+    kind, idx = None, None
+    for i, w in enumerate(words[:3]):
+        lw = w.lower()
+        if any(lw.startswith(k) for k in ENTRY_WORDS):
+            kind, idx = "open", i
+            side = next(v for k, v in ENTRY_WORDS.items() if lw.startswith(k))
+            break
+        if any(lw.startswith(k) for k in CLOSE_WORDS):
+            kind, idx = "close", i
+            break
+    if not kind:
+        return None
+    rest = " ".join(words[idx + 1:])
+
+    if kind == "close":
         nums = re.findall(NUM, rest)
         if not nums:
             return None
         price = fnum(nums[0])
-        if not 100 <= price <= 100000:
-            return None
-        return {"type": "close", "price": price, "id": pid}
+        return {"type": "close", "price": price, "id": pid} if 100 <= price <= 100000 else None
 
-    side = next((v for k, v in ENTRY_WORDS.items() if w0.startswith(k)), None)
-    if not side:
-        return None
-    full = " ".join(lines)
-    sl = re.search(r"(?:손절|sl|stop)\s*[:：]?\s*(" + NUM + ")", full, re.I)
-    tp = re.search(r"(?:목표|익절|tp|target)\s*[:：]?\s*(" + NUM + ")", full, re.I)
+    sl = re.search(r"(?:손절|sl|stop)\s*[:：]?\s*(" + NUM + ")", rest, re.I)
+    tp = re.search(r"(?:목표|익절|tp|target)\s*[:：]?\s*(" + NUM + ")", rest, re.I)
     clean = re.sub(r"(?:손절|sl|stop|목표|익절|tp|target)\s*[:：]?\s*" + NUM, " ", rest, flags=re.I)
     lot_after = r"(?:랏|lots?)\s*[:：]?\s*(" + NUM + ")"   # 'lot 0.3'
-    lot_before = r"(" + NUM + r")\s*(?:랏|lots?)"           # '0.3랏'
+    lot_before = r"(" + NUM + r")\s*(?:랏|lots?)"           # '0.3랏', '0.1 랏'
     lot = re.search(lot_after, clean, re.I)
     if lot:
         clean = re.sub(lot_after, " ", clean, flags=re.I)
@@ -773,6 +833,8 @@ def main():
         run("아침 브리핑", lambda: morning_brief(now))
     elif mode == "news":
         run("뉴스", lambda: post_news(state, now, force=True))
+    elif mode == "monday":
+        run("월요일 브리핑", lambda: monday_brief(state, now))
     elif mode == "weekly":
         run("주간 리포트", lambda: weekly_report(now))
     elif mode == "price":
@@ -792,7 +854,8 @@ def main():
         run("포지션 기록", lambda: process_channel(state, now))
         run("월간 결산", lambda: monthly_pnl_report(state, now))
     else:  # auto: 15분마다 실행되며 때가 된 것만 보냄
-        run("포지션 기록", lambda: process_channel(state, now))
+        if POSITION_FEATURE:
+            run("포지션 기록", lambda: process_channel(state, now))
         run("지표 알림", lambda: event_alerts(state, now))
         run("가격 알림", lambda: price_check(state, now))
 
@@ -815,6 +878,14 @@ def main():
                 run("뉴스", _n)
         state["news_slots"] = done_slots[-20:]
 
+        # 월요일 브리핑: 월요일, 아침 브리핑 시각부터 4시간 안에 한 번
+        if (k.weekday() == 0 and MORNING_HOUR <= k.hour < MORNING_HOUR + 4
+                and state.get("last_monday") != today):
+            def _mon():
+                monday_brief(state, now)
+                state["last_monday"] = today
+            run("월요일 브리핑", _mon)
+
         # 주간 리포트: 토요일, 설정 시각부터 4시간 안에 한 번
         if (k.weekday() == 5 and WEEKLY_HOUR <= k.hour < WEEKLY_HOUR + 4
                 and state.get("last_weekly") != today):
@@ -824,7 +895,7 @@ def main():
             run("주간 리포트", _w)
 
         # 일일 매매 결산: 화~토 (전 거래일)
-        if (k.weekday() in (1, 2, 3, 4, 5) and DAILY_REPORT_HOUR <= k.hour < DAILY_REPORT_HOUR + 4
+        if (POSITION_FEATURE and k.weekday() in (1, 2, 3, 4, 5) and DAILY_REPORT_HOUR <= k.hour < DAILY_REPORT_HOUR + 4
                 and state.get("last_daily_pnl") != today):
             def _d():
                 daily_pnl_report(state, now)
@@ -832,7 +903,7 @@ def main():
             run("일일 결산", _d)
 
         # 주간 매매 결산: 토요일
-        if (k.weekday() == 5 and WEEKLY_HOUR <= k.hour < WEEKLY_HOUR + 4
+        if (POSITION_FEATURE and k.weekday() == 5 and WEEKLY_HOUR <= k.hour < WEEKLY_HOUR + 4
                 and state.get("last_weekly_pnl") != today):
             def _wp():
                 weekly_pnl_report(state, now)
@@ -840,7 +911,7 @@ def main():
             run("주간 결산", _wp)
 
         # 월간 매매 결산: 매월 1일
-        if (k.day == 1 and WEEKLY_HOUR <= k.hour < WEEKLY_HOUR + 4
+        if (POSITION_FEATURE and k.day == 1 and WEEKLY_HOUR <= k.hour < WEEKLY_HOUR + 4
                 and state.get("last_monthly_pnl") != today):
             def _mp():
                 monthly_pnl_report(state, now)
