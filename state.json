@@ -1,5 +1,6 @@
 {
  "alerted_events": {},
+ "last_monday": "2026-11-23",
  "last_morning": "2026-11-21",
  "last_price_bar": "2026-11-20T16:00:00-05:00",
  "last_weekly": "2026-11-21",
@@ -87,7 +88,11 @@
   "https://news.google.com/rss/articles/CBMiiAFBVV95cUxOYmIyMDFpWEFlZ0FuSTBVNzRnOG9oOXpHTVJvTWYxYno5cmxXY3lpeXZpbmo4TzAwTzUwcUxKaUNzbzloeVBycVN6QnVXcTNYdWVDXzlMdXlpWjhiTkc0aGNLdTRSbm1tTXVBbm9SaHI0YU13b3BjTmFsRXVnTEtRNUxmVnlKV1NP?oc=5",
   "https://news.google.com/rss/articles/CBMicEFVX3lxTFBVdk90Rk5UUGY3S2hkUHNnUzJnaFNtVS0yYXlZdlJZRmhQYlpLcktZN04wOE5ubFEyZk5oZmxMdVc4WGxOVnVTUFE0NE4wbXRFNThZWi1pSUhSdWFrRHhHYjlEeW5MVEtvM3R4SzRrYTE?oc=5",
   "https://news.google.com/rss/articles/CBMijgFBVV95cUxQTHcyNUZEc3M3bHdjRVA0VTlkZkkzazd1NjBMQUtvVllGcC1sTmJwcVFOcWlKMFlQWHlUYUZfc2ZGUmEydEVaWVJLalNnOUVoaTJlVW5LYkVBV0JlWFJqdDdPSDZKanNUdzliWklWVDNWeVZVTlNsRmVqejlzNTdGekRzM2d6UnJUWlgzLVZR?oc=5",
-  "https://news.google.com/rss/articles/CBMiWkFVX3lxTE0xOTEtZVRHMFBfa0ZWejIwMVZ5eDFoLUU3STgwNDBqckcwQW9TMWk0T0hKNUprMVZHNXpGYTdYakVsWXFqcGIzb1JxZzQtZmI0em13RFVKVWxmZw?oc=5"
+  "https://news.google.com/rss/articles/CBMiWkFVX3lxTE0xOTEtZVRHMFBfa0ZWejIwMVZ5eDFoLUU3STgwNDBqckcwQW9TMWk0T0hKNUprMVZHNXpGYTdYakVsWXFqcGIzb1JxZzQtZmI0em13RFVKVWxmZw?oc=5",
+  "https://news.google.com/rss/articles/CBMiaEFVX3lxTFBDNmhZVjVrNk90eDZULUZGQlY1RmJibHFvbGhkT2ZzaGVFT0VZLUdBbWFqTkVhRmcwUHVQSHpoYWRzRXRQSE1CNm1sdFl6SVlsb3ladWdvOFhMa3ZmVHBjWHlXekRxUWt3?oc=5",
+  "https://news.google.com/rss/articles/CBMiVkFVX3lxTE14V0lRZFpIMGR2bWhSSWh5Z1R0bHQ3LTR1LThacGUyY25oNVBJTHUtZjNsY0ZFSGVoWXdNT0JNRUtld3lYbmdTUk85bHlyWXFiSzRXYlpB?oc=5",
+  "https://news.google.com/rss/articles/CBMicEFVX3lxTFBVdk90Rk5UUGY3S2hkUHNnUzJnaFNtVS0yYXlZdlJZRmhQYlpLcktZN04wOE5ubFEyZk5oZmxMdVc4WGxOVnVTUFE0NE4wbXRFNThZWi1pSUhSdWFrRHhHYjlEeW5MVEtvM3R4SzRrYTE?oc=5",
+  "https://news.google.com/rss/articles/CBMijgFBVV95cUxQTHcyNUZEc3M3bHdjRVA0VTlkZkkzazd1NjBMQUtvVllGcC1sTmJwcVFOcWlKMFlQWHlUYUZfc2ZGUmEydEVaWVJLalNnOUVoaTJlVW5LYkVBV0JlWFJqdDdPSDZKanNUdzliWklWVDNWeVZVTlNsRmVqejlzNTdGekRzM2d6UnJUWlgzLVZR?oc=5"
  ],
  "tg_offset": 922670813
 }
