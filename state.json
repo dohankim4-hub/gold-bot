@@ -2,7 +2,7 @@
  "alerted_events": {},
  "last_monday": "2026-11-23",
  "last_morning": "2026-11-24",
- "last_price_bar": "2026-11-24T03:00:00-05:00",
+ "last_price_bar": "2026-11-24T04:00:00-05:00",
  "last_weekly": "2026-11-21",
  "news_slots": [
   "2026-11-17-19",
@@ -18,7 +18,8 @@
   "2026-11-22-19",
   "2026-11-23-12",
   "2026-11-23-19",
-  "2026-11-24-12"
+  "2026-11-24-12",
+  "2026-11-24-19"
  ],
  "next_id": 3,
  "owner_id": "5430409548",
@@ -104,7 +105,10 @@
   "https://www.yna.co.kr/view/AKR20261123109500002",
   "https://news.google.com/rss/articles/CBMiW0FVX3lxTE9lM01lTmdSR2ZJWmtlSUpvUmRJWklUbTBmcjFmSFZoVEtQOFNWd1pDMGVWQTNneGxYVG84UURoMFk3SWJZRExORlRqZDNTNF9ON29DUGRPRW5UcVk?oc=5",
   "https://news.google.com/rss/articles/CBMibEFVX3lxTE9uaFMtQmZBYWhFZUJ0TFhIXzFCODExdkVpRGhRNU8wX21CbEc1WHRmNnJManE5UFo2ZmxQUnIyLV9rdXNLYzRiUEtMWVdXRWJOby1uWkNWbFFLS2k3eHZmT3ppcmZYOVBEV1M3Rw?oc=5",
-  "https://news.google.com/rss/articles/CBMigAFBVV95cUxNMlhicmxrdW1CckU5S2pVakNLclRaTDdOcUhUYlFTQUwwNFEyZkZPcnoxOXdSemdKS2ppdy1pNjJpYVV4VGZiU2Q2RFFoMy1aTDh1ZVJzcnpmemtKUmZ3aTR2YUQ0SjZ0dXIzV1E1OFdBNVdxdE0yLXMyalJrenBpdg?oc=5"
+  "https://news.google.com/rss/articles/CBMigAFBVV95cUxNMlhicmxrdW1CckU5S2pVakNLclRaTDdOcUhUYlFTQUwwNFEyZkZPcnoxOXdSemdKS2ppdy1pNjJpYVV4VGZiU2Q2RFFoMy1aTDh1ZVJzcnpmemtKUmZ3aTR2YUQ0SjZ0dXIzV1E1OFdBNVdxdE0yLXMyalJrenBpdg?oc=5",
+  "https://news.google.com/rss/articles/CBMiWkFVX3lxTFBENXZ0TEU1MW9BM21ZOVZ0Y1V0ckZFVTd2clRtYUJVTmpfZGlMcUlkZXluTnZxeDVaN3RzazZtWDBDQzdSRDQwZWJvM2I2bVpCNFJxXzVtNmt1dw?oc=5",
+  "https://news.google.com/rss/articles/CBMibEFVX3lxTFA5SDFJOFBsUjVzRHpqZmhaU0tDTnV5RjJyazJKLTVuX0RNRWZnUlE2bVhaSUt2WllUNm96cnFweUFxM0lCOUJERnRKUkpEZkpTeUM3eElkd0ZraDBpcTFVei1XUDI4ZWlMMENfbw?oc=5",
+  "https://news.google.com/rss/articles/CBMicEFVX3lxTE5FZ1EwV3lEYjd6SkVrMVFhMFlUeTIxc1NGbW9hVG9UczVHdFJEYnlqcF95cjJFZ3E3T3ZBeGdOQ0gzbXk5c25LZTdwOGJjR29hdFBYN3ExS2VJekxTSENMX2pRV2dLVjQybWlLbnBfZ1U?oc=5"
  ],
  "tg_offset": 922670813
 }
