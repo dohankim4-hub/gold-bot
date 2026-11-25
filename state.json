@@ -2,7 +2,7 @@
  "alerted_events": {},
  "last_monday": "2026-11-23",
  "last_morning": "2026-11-25",
- "last_price_bar": "2026-11-25T03:00:00-05:00",
+ "last_price_bar": "2026-11-25T04:00:00-05:00",
  "last_weekly": "2026-11-21",
  "news_slots": [
   "2026-11-17-19",
@@ -20,7 +20,8 @@
   "2026-11-23-19",
   "2026-11-24-12",
   "2026-11-24-19",
-  "2026-11-25-12"
+  "2026-11-25-12",
+  "2026-11-25-19"
  ],
  "next_id": 3,
  "owner_id": "5430409548",
@@ -112,7 +113,10 @@
   "https://news.google.com/rss/articles/CBMicEFVX3lxTE5FZ1EwV3lEYjd6SkVrMVFhMFlUeTIxc1NGbW9hVG9UczVHdFJEYnlqcF95cjJFZ3E3T3ZBeGdOQ0gzbXk5c25LZTdwOGJjR29hdFBYN3ExS2VJekxTSENMX2pRV2dLVjQybWlLbnBfZ1U?oc=5",
   "https://www.newsis.com/view/NISX20261125_0003882233",
   "https://news.google.com/rss/articles/CBMiUEFVX3lxTE1yOExJYmo5ZWNDVW5Vd1hvQ1BGLUg4YW01NXJUeDhhMkhlRU95b2NvLUVPdTBwMTRiZGI5NnN3YWNnSldsQ0RNQlcyMGRsY0hl?oc=5",
-  "https://news.google.com/rss/articles/CBMibEFVX3lxTE9FM1VKNXZjTjdCUF9fc3laQkhpRHBvWW1kN0hjank2Q0VSNmVLNmxtb2FHRURmR1lXMEI1cW5oRmdrTlBReTYwbU5OZlRLUklPY2lEbFd1UjZSQ3VaM0FfVGtXUXVuUTNZX3FnT9IBcEFVX3lxTE9GR1J1V1c0Tm9Ocm1RRWtNYzFZYTBDTWZ1ME5oaVo1RDZQdkhNbC14dEhwZUlsZGhobGdJcWpVTGNiYjFVZGdmclVLMjB5OWM2MndXVVI5WDhGdGljS1VHNUxoMGR2VTIwNmpjQV9fWVI?oc=5"
+  "https://news.google.com/rss/articles/CBMibEFVX3lxTE9FM1VKNXZjTjdCUF9fc3laQkhpRHBvWW1kN0hjank2Q0VSNmVLNmxtb2FHRURmR1lXMEI1cW5oRmdrTlBReTYwbU5OZlRLUklPY2lEbFd1UjZSQ3VaM0FfVGtXUXVuUTNZX3FnT9IBcEFVX3lxTE9GR1J1V1c0Tm9Ocm1RRWtNYzFZYTBDTWZ1ME5oaVo1RDZQdkhNbC14dEhwZUlsZGhobGdJcWpVTGNiYjFVZGdmclVLMjB5OWM2MndXVVI5WDhGdGljS1VHNUxoMGR2VTIwNmpjQV9fWVI?oc=5",
+  "https://news.google.com/rss/articles/CBMibEFVX3lxTE5SOERWZE4ySWxRbW5XYi1mX2kzWlc1aFJ4LVZUT1oxd0U3Rm1NLS1XaHEzSzVmZjVSX3RSbFBsVTdBcDJXejhJa0xSLVdNWFNWT3FYUWFsRUxoSk50a0J2UzQxelJKSFFoY0hHUQ?oc=5",
+  "https://news.google.com/rss/articles/CBMicEFVX3lxTE11NnBLNWNnbU9BT3RMTkIzelRZRWpTd09kYTJWSzIzZDF2aW4wTVQ4Nl9YY0ZqbjZxb1dCeFRTTkNIRV9RbURxNHcxemFVQzIxX1RpaElnV3VYeEhwbDlKNXJadld3S3pYb1FkNzNyXzM?oc=5",
+  "https://news.google.com/rss/articles/CBMiVEFVX3lxTE82N0o4ZG1zNnREd0VPbHNINVVmdzFmX2xHWUlEdFBDbkcza1Z0OTNqTHFYdnd4WGVWeGdjcjRWa2hMZnFlaW9rdFFVQm9yVXVBbkJIMQ?oc=5"
  ],
  "tg_offset": 922670813
 }
