@@ -8,7 +8,6 @@
  "last_price_bar": "2026-11-25T23:00:00-05:00",
  "last_weekly": "2026-11-21",
  "news_slots": [
-  "2026-11-17-19",
   "2026-11-18-12",
   "2026-11-18-19",
   "2026-11-19-12",
@@ -27,7 +26,8 @@
   "2026-11-25-19",
   "2026-11-26-12",
   "2026-11-26-19",
-  "2026-11-27-12"
+  "2026-11-27-12",
+  "2026-11-27-19"
  ],
  "next_id": 3,
  "owner_id": "5430409548",
@@ -131,7 +131,10 @@
   "https://www.newsis.com/view/NISX20261126_0003884422",
   "https://news.google.com/rss/articles/CBMisgFBVV95cUxNYlQwa1A4NlNlYWtCZEttMDZqZXpTZXMweFk1OXRBYXJIcGhydW1yS1V0ME9UWG5wcmNXSUE4TlNFZ0hUV1Fzc0hWaWsxWWNDOW1xSmVwcGgxT19PbnRjQTlPemk0OFVNY0Y3WnlCZUs2Tk4wNmsyNHhmLVVObzdJS1dEbFFtR09fX1ltQ2FFVXN4bHJ4c2dtODhjZE1KczlubXRxZElxUk51WGo1SFVVVHB3?oc=5",
   "https://news.google.com/rss/articles/CBMiSEFVX3lxTE96VGxYU0tleGtEekVGQjMweC1pOXRpa3E1d0ZCeEJoakxDWDZmblpLMWQtck01ZjkwRXJvMHk1R2lGWHlFcUcwWA?oc=5",
-  "https://news.google.com/rss/articles/CBMibEFVX3lxTE51MVRpX3k3QTJaNGNObWNVZVRpUEIxRl9zbExCbWo2OTdGYzZpQTRQeXB3UkVQcDVPM2l1Q01DWTVQREpsUFRoa0ZaNTFqQUQzcUozUEJXdFNRMUxPbC1oQjlaNWt4YkkyTmE4bA?oc=5"
+  "https://news.google.com/rss/articles/CBMibEFVX3lxTE51MVRpX3k3QTJaNGNObWNVZVRpUEIxRl9zbExCbWo2OTdGYzZpQTRQeXB3UkVQcDVPM2l1Q01DWTVQREpsUFRoa0ZaNTFqQUQzcUozUEJXdFNRMUxPbC1oQjlaNWt4YkkyTmE4bA?oc=5",
+  "https://www.yna.co.kr/view/AKR20261127115900002",
+  "https://www.newsis.com/view/NISX20261127_0003886433",
+  "https://www.hankyung.com/article/202611274718i"
  ],
  "tg_offset": 922670813
 }
